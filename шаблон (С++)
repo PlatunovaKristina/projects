@@ -1,0 +1,89 @@
+#include <iostream>
+#include <cmath>
+
+using namespace std;
+
+template <typename T>
+class ArrayStatistics {
+private:
+    T* data;                              // Указатель на массив данных
+    size_t dataSize;                      // Хранение размера массива
+
+public:
+
+    ArrayStatistics(T* nData, size_t size) {
+        dataSize = size;
+        data = new T[dataSize];
+        for (size_t i = 0; i < dataSize; ++i) {
+            data[i] = nData[i];
+        }
+    }
+
+
+    ~ArrayStatistics() {
+        delete[] data;
+    }
+
+                                                       // Медиана
+    double median() const {
+        if (dataSize % 2 == 1) {
+            return static_cast<double>(data[dataSize / 2]);
+        } else {
+            return (static_cast<double>(data[dataSize / 2 - 1]) + static_cast<double>(data[dataSize / 2])) / 2.0;
+        }
+    }
+
+                                                        // Стандартное отклонение
+    double standardDeviation() const
+    {
+        double mean = 0.0;
+
+        for (size_t i = 0; i < dataSize; ++i) {
+            mean += data[i];
+        }
+        mean /= dataSize;
+
+        double variance = 0.0;
+
+                                              //  дисперсия
+        for (size_t i = 0; i < dataSize; ++i) {
+            variance += (data[i] - mean) * (data[i] - mean);
+        }
+        variance /= dataSize;
+
+        return sqrt(variance);
+    }
+
+    // Указатель на данные
+    T* getData() const {
+        return data;
+    }
+
+    // Размер массива
+    size_t getSize() const {
+        return dataSize;
+    }
+};
+
+int main() {
+    setlocale(LC_ALL, "Russian");
+
+    int num[] = {1, 1, 3, 4, 9}; // Пример массива
+    size_t size = sizeof(num) / sizeof(num[0]); // Получаем размер массива динамически
+
+    ArrayStatistics<int> stats(num, size); // Используем шаблонный класс с типом int
+
+    cout << "Массив: ";
+    for (size_t i = 0; i < stats.getSize(); ++i) {
+        cout << stats.getData()[i] << " ";
+    }
+    cout << endl;
+
+    double med = stats.median();
+    cout << "Медиана: " << med << endl;
+
+    double stddev = stats.standardDeviation();
+    cout << "Стандартное отклонение: " << stddev << endl;
+
+    return 0;
+}
