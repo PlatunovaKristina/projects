@@ -1,0 +1,453 @@
+import java.util.*;
+import java.text.SimpleDateFormat;
+
+//хранение записей
+class Post {
+    private String title;
+    private String content;
+    private List<String> comments;
+    private Date publicationDate;
+    private Date lastEditDate;
+
+    public Post(String title, String content) {
+        this.title = title;
+        this.content = content;
+        this.comments = new ArrayList<>();
+        this.publicationDate = new Date();
+        this.lastEditDate = new Date();
+    }
+
+    // Геттеры и сеттеры
+    public String getTitle() { return title; }
+    public String getContent() { return content; }
+    public List<String> getComments() { return comments; }
+    public Date getPublicationDate() { return publicationDate; }
+    public Date getLastEditDate() { return lastEditDate; }
+
+    public void setTitle(String title) {
+        this.title = title;
+        this.lastEditDate = new Date();
+    }
+
+    public void setContent(String content) {
+        this.content = content;
+        this.lastEditDate = new Date();
+    }
+
+    public void addComment(String comment) {
+        comments.add(comment);
+    }
+
+    public String getFormattedDate() {
+        SimpleDateFormat sdf = new SimpleDateFormat("dd.MM.yyyy HH:mm");
+        return sdf.format(publicationDate);
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Запись: '%s'\nДата: %s\nЗаголовок: %s  \nКомментарии (%d): %s",
+                title, getFormattedDate(), content, comments.size(), comments);
+    }
+}
+
+//  хранения блога
+class Blog {
+    private String author;
+    private List<Post> posts;
+    private List<String> tags;
+
+    public Blog(String author) {
+        this.author = author;
+        this.posts = new ArrayList<>();
+        this.tags = new ArrayList<>();
+    }
+
+    // Геттеры
+    public String getAuthor() { return author; }
+    public List<Post> getPosts() { return posts; }
+    public List<String> getTags() { return tags; }
+
+    // Методы для работы с блогом
+    public void addPost(Post post) {
+        posts.add(post);
+    }
+
+    public boolean removePost(int index) {
+        if (index >= 0 && index < posts.size()) {
+            posts.remove(index);
+            return true;
+        }
+        return false;
+    }
+
+    public void addTag(String tag) {
+        if (!tags.contains(tag)) {
+            tags.add(tag);
+        }
+    }
+
+    public List<Post> getPostsSortedByDate() {
+        posts.sort((p1, p2) -> p2.getPublicationDate().compareTo(p1.getPublicationDate()));
+        return posts;
+    }
+
+    @Override
+    public String toString() {
+        return String.format("Автор: %s\nТеги: %s\nЗаписей: %d",
+                author, tags, posts.size());
+    }
+
+    public String getDetailedInfo() {
+        StringBuilder sb = new StringBuilder(toString());
+        sb.append("\nЗаписи:\n");
+        for (int i = 0; i < posts.size(); i++) {
+            sb.append(i+1).append(". ").append(posts.get(i)).append("\n");
+        }
+        return sb.toString();
+    }
+}
+
+//НОВЫЙ КЛАСС ОПРЕД
+import java.util.*;
+
+ class Operations {
+    private List<Blog> blogs;
+    private Scanner scanner;
+
+    public Operations() {
+        this.blogs = new ArrayList<>();
+        this.scanner = new Scanner(System.in);
+    }
+
+    // Основные операции
+    public void addBlog(Blog blog) {
+        blogs.add(blog);
+    }
+
+    public List<Blog> getAllBlogs() {
+        return blogs;
+    }
+
+    public Blog createBlog(String author) {
+        Blog newBlog = new Blog(author);
+        blogs.add(newBlog);
+        return newBlog;
+    }
+
+    public List<Blog> searchByAuthor(String author) {
+        List<Blog> result = new ArrayList<>();
+        for (Blog blog : blogs) {
+            if (blog.getAuthor().toLowerCase().contains(author.toLowerCase())) {
+                result.add(blog);
+            }
+        }
+        return result;
+    }
+
+    public List<Blog> searchByTag(String tag) {
+        List<Blog> result = new ArrayList<>();
+        for (Blog blog : blogs) {
+            if (blog.getTags().contains(tag)) {
+                result.add(blog);
+            }
+        }
+        return result;
+    }
+
+    public List<Post> searchPosts(String keyword) {
+        List<Post> result = new ArrayList<>();
+        for (Blog blog : blogs) {
+            for (Post post : blog.getPosts()) {
+                if (post.getTitle().toLowerCase().contains(keyword.toLowerCase()) ||
+                        post.getContent().toLowerCase().contains(keyword.toLowerCase())) {
+                    result.add(post);
+                }
+            }
+        }
+        return result;
+    }
+
+    public List<Post> getRecentPosts(int count) {
+        List<Post> allPosts = new ArrayList<>();
+        for (Blog blog : blogs) {
+            allPosts.addAll(blog.getPosts());
+        }
+        allPosts.sort((p1, p2) -> p2.getPublicationDate().compareTo(p1.getPublicationDate()));
+        return allPosts.subList(0, Math.min(count, allPosts.size()));
+    }
+
+
+    public Blog getBlogByIndex(int index) {
+        if (index >= 0 && index < blogs.size()) {
+            return blogs.get(index);
+        }
+        return null;
+    }
+
+    public String inputString(String prompt) {
+        System.out.print(prompt);
+        return scanner.nextLine();
+    }
+
+    public int inputInt(String prompt) {
+        System.out.print(prompt);
+        int value = scanner.nextInt();
+        scanner.nextLine(); // Очистка буфера
+        return value;
+    }
+
+     public void initializeSampleData() {
+         Blog blog1 = new Blog("Лев Толстой");
+         Post post1 = new Post("Война и мир", "Роман-эпопея о Наполеоновских войнах...");
+         post1.addComment("Отличная книга!");
+         post1.addComment("Читал несколько раз");
+         blog1.addPost(post1);
+
+         Post post2 = new Post("Анна Каренина", "История трагической любви...");
+         post2.addComment("Классика русской литературы");
+         blog1.addPost(post2);
+         blog1.addTag("#Литература");
+         blogs.add(blog1);
+
+         Blog blog2 = new Blog("Михаэль Шумахер");
+         Post post3 = new Post("Мои победы", "Истории чемпионских сезонов...");
+         blog2.addPost(post3);
+         blog2.addTag("#Спорт");
+         blogs.add(blog2);
+     }
+}
+
+//НОВЫЙ КЛАСС ВЫВОД
+import java.util.List;
+
+public class Main {
+    private static Operations operations = new Operations();
+
+    public static void main(String[] args) {
+        operations.initializeSampleData();
+        showMainMenu();
+    }
+
+    private static void showMainMenu() {
+        while (true) {
+            System.out.println("\n БЛОГ-ПЛАТФОРМА ");
+            System.out.println("1. Подробная информация о блогах");
+            System.out.println("2. Управление блогами и записями");
+            System.out.println("3. Поиск по автору");
+            System.out.println("4. Поиск по тегам");
+            System.out.println("0. Выход");
+
+            int choice = operations.inputInt("Выберите действие: ");
+
+            switch (choice) {
+                case 1 -> showAllBlogs();
+                case 2 -> manageBlogsAndPosts();
+                case 3 -> searchByAuthor();
+                case 4 -> searchByTag();
+                case 5 -> searchPosts();
+                case 0 -> {
+                    return;
+                }
+                default -> System.out.println("Неверный выбор!");
+            }
+        }
+    }
+
+    private static void showAllBlogs() {
+        List<Blog> blogs = operations.getAllBlogs();
+        if (blogs.isEmpty()) {
+            System.out.println("Нет блогов.");
+            return;
+        }
+
+        System.out.println("\n ВСЕ БЛОГИ ");
+        for (int i = 0; i < blogs.size(); i++) {
+            System.out.println((i + 1) + ". " + blogs.get(i));
+        }
+
+        int choice = operations.inputInt("\nПодробнее о блоге № (0 - назад): ");
+        if (choice > 0 && choice <= blogs.size()) {
+            showFullBlogInfo(blogs.get(choice - 1));
+        }
+    }
+
+    private static void showFullBlogInfo(Blog blog) {
+        System.out.println("\nПОЛНАЯ ИНФОРМАЦИЯ О БЛОГЕ");
+        System.out.println("Автор: " + blog.getAuthor());
+        System.out.println("Теги: " + String.join(", ", blog.getTags()));
+
+        List<Post> posts = blog.getPosts();
+        if (posts.isEmpty()) {
+            System.out.println("\nВ этом блоге пока нет записей.");
+            return;
+        }
+
+        // сортировка от новых до старых записей
+        posts.sort((p1, p2) -> p2.getPublicationDate().compareTo(p1.getPublicationDate()));
+
+        System.out.println("\nЗАПИСИ БЛОГА:");
+        for (Post post : posts) {
+            System.out.println("\nДата публикации: " + post.getFormattedDate());
+            System.out.println("Заголовок: " + post.getTitle());
+            System.out.println("Текст: " + post.getContent());
+
+            // Выводим комментарии
+            System.out.println("\nКомментарии:");
+            if (post.getComments().isEmpty()) {
+                System.out.println("  Комментариев пока нет");
+            } else {
+                for (String comment : post.getComments()) {
+                    System.out.println("  - " + comment);
+                }
+            }
+        }
+    }
+
+    private static void showBlogDetails(Blog blog) {
+        while (true) {
+            System.out.println("\nБлог автора: " + blog.getAuthor());
+            System.out.println("1. Показать все записи");
+            System.out.println("2. Добавить запись");
+            System.out.println("3. Редактировать запись");
+            System.out.println("0. Назад");
+
+            int choice = operations.inputInt("Выберите действие: ");
+
+            switch (choice) {
+                case 1 -> showPosts(blog);
+                case 2 -> addPostToBlog(blog);
+                case 3 -> editPostInBlog(blog);
+                case 0 -> { return; }
+                default -> System.out.println("Неверный выбор!");
+            }
+        }
+    }
+
+    private static void showPosts(Blog blog) {
+        List<Post> posts = blog.getPosts();
+        if (posts.isEmpty()) {
+            System.out.println("В этом блоге пока нет записей.");
+            return;
+        }
+
+        System.out.println("\nЗаписи блога " + blog.getAuthor() + ":");
+        for (int i = 0; i < posts.size(); i++) {
+            System.out.println((i + 1) + ". " + posts.get(i).getTitle() +
+                    " (" + posts.get(i).getFormattedDate() + ")");
+        }
+    }
+
+    private static void addPostToBlog(Blog blog) {
+        String title = operations.inputString("Заголовок: ");
+        String content = operations.inputString("Текст: ");
+        Post post = new Post(title, content);
+        blog.addPost(post);
+        System.out.println("Запись добавлена!");
+    }
+
+    private static void editPostInBlog(Blog blog) {
+        List<Post> posts = blog.getPosts();
+        if (posts.isEmpty()) {
+            System.out.println("В этом блоге пока нет записей для редактирования.");
+            return;
+        }
+
+        System.out.println("\nВыберите запись для редактирования:");
+        for (int i = 0; i < posts.size(); i++) {
+            System.out.println((i + 1) + ". " + posts.get(i).getTitle());
+        }
+
+        int choice = operations.inputInt("Ваш выбор (0 - отмена): ");
+        if (choice > 0 && choice <= posts.size()) {
+            Post post = posts.get(choice - 1);
+            System.out.println("\nТекущий заголовок: " + post.getTitle());
+            String newTitle = operations.inputString("Новый заголовок (оставьте пустым, чтобы не менять): ");
+            if (!newTitle.isEmpty()) {
+                post.setTitle(newTitle);
+            }
+
+            System.out.println("\nТекущий текст: " + post.getContent());
+            String newContent = operations.inputString("Новый текст (оставьте пустым, чтобы не менять): ");
+            if (!newContent.isEmpty()) {
+                post.setContent(newContent);
+            }
+
+            System.out.println("Запись обновлена!");
+        }
+    }
+
+    private static void manageBlogsAndPosts() {
+        while (true) {
+            System.out.println("\n УПРАВЛЕНИЕ БЛОГАМИ И ЗАПИСЯМИ ");
+            System.out.println("1. Создать новый блог");
+            System.out.println("2. Выбрать существующий блог");
+            System.out.println("0. Назад");
+
+            int choice = operations.inputInt("Выберите действие: ");
+
+            switch (choice) {
+                case 1 -> {
+                    String author = operations.inputString("Имя автора: ");
+                    Blog blog = operations.createBlog(author);
+                    System.out.println("Блог создан!");
+                    showBlogDetails(blog);
+                }
+                case 2 -> {
+                    List<Blog> blogs = operations.getAllBlogs();
+                    if (blogs.isEmpty()) {
+                        System.out.println("Нет доступных блогов.");
+                        continue;
+                    }
+
+                    System.out.println("\nВыберите блог:");
+                    for (int i = 0; i < blogs.size(); i++) {
+                        System.out.println((i + 1) + ". " + blogs.get(i).getAuthor());
+                    }
+
+                    int blogChoice = operations.inputInt("Ваш выбор (0 - отмена): ");
+                    if (blogChoice > 0 && blogChoice <= blogs.size()) {
+                        showBlogDetails(blogs.get(blogChoice - 1));
+                    }
+                }
+                case 0 -> { return; }
+                default -> System.out.println("Неверный выбор!");
+            }
+        }
+    }
+
+    private static void searchByAuthor() {
+        String author = operations.inputString("Имя автора: ");
+        List<Blog> result = operations.searchByAuthor(author);
+
+        if (result.isEmpty()) {
+            System.out.println("Не найдено.");
+        } else {
+            System.out.println("\nРезультаты:");
+            result.forEach(blog -> System.out.println(blog.getDetailedInfo()));
+        }
+    }
+
+    private static void searchByTag() {
+        String tag = operations.inputString("Тег: ");
+        List<Blog> result = operations.searchByTag(tag);
+
+        if (result.isEmpty()) {
+            System.out.println("Не найдено.");
+        } else {
+            System.out.println("\nРезультаты:");
+            result.forEach(System.out::println);
+        }
+    }
+
+    private static void searchPosts() {
+        String keyword = operations.inputString("Ключевое слово: ");
+        List<Post> result = operations.searchPosts(keyword);
+
+        if (result.isEmpty()) {
+            System.out.println("Не найдено.");
+        } else {
+            System.out.println("\nРезультаты:");
+            result.forEach(post -> System.out.println(post + "\n---"));
+        }
+    }
+}
